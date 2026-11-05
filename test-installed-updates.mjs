@@ -37,9 +37,9 @@ test('safe one-click uses native null-id identity once and refreshes list plus v
  h.render(props);await flush();const tree=h.render(props), update=button(tree,'一鍵更新');
  update.props.onClick();update.props.onClick();button(tree,'驗證').props.onClick();button(tree,'檢查更新').props.onClick();
  assert.equal(h.calls.filter(c=>c.method==='update:apply').length,1);assert.equal(h.calls.filter(c=>c.method==='verify').length,0);
- assert.equal(JSON.stringify(h.calls.find(c=>c.method==='update:apply').args),JSON.stringify({localName:native.localName}));
+ assert.equal(JSON.stringify(h.calls.find(c=>c.method==='update:apply').args),JSON.stringify({localName:native.localName,targetVersion:'2.0.0'}));
  assert.equal(button(h.render(props),'更新中…').props.disabled,true);
- apply.resolve({ok:true,application:'applied',applied:true});await flush();assert.equal(changed,1);assert.equal(h.calls.at(-1).method,'update:check');assert.equal(h.calls.at(-1).args.force,true);assert.match(text(h.render(props)),/更新完成/);h.unmount();
+ apply.resolve({ok:true,application:'applied',applied:true,versionCheck:{status:'verified',before:'1.0.0',expected:'2.0.0',installed:'2.0.0'}});await flush();assert.equal(changed,1);assert.equal(h.calls.at(-1).method,'update:check');assert.equal(h.calls.at(-1).args.force,true);assert.match(text(h.render(props)),/更新完成/);h.unmount();
 });
 test('unsafe source exposes newer version and reason, never one-click action',async()=>{
  const h=harness(async()=>[{...available,canUpdate:false,unavailableReason:'manual-only'}]);const props={installed:[native],loading:false,onChanged(){}};
@@ -49,6 +49,17 @@ test('unsafe source exposes newer version and reason, never one-click action',as
  assert.equal(h.installedUpdateAvailability(native,{...available,error:'offline'}).allowed,false);
  assert.equal(h.installedUpdateAvailability(native,{...available,stale:true}).allowed,false);
 });
+test('only a valid exact version can authorize the one-click update payload',async()=>{
+ const h=harness();
+ for(const latest of [undefined,null,2,'',' ','latest','^2.0.0','2.0','2.0.0; npm install other']) assert.equal(h.installedUpdateAvailability(native,{...available,latest}).allowed,false,String(latest));
+ for(const latest of ['2.0.0','0.4.17-portable.5','2.0.0-rc.1+build.2']) assert.equal(h.installedUpdateAvailability(native,{...available,latest}).allowed,true,latest);
+ const invalid=harness(async()=>[{...available,latest:'latest'}]),props={installed:[native],loading:false,onChanged(){}};
+ invalid.render(props);await flush();const tree=invalid.render(props);assert.equal(button(tree,'一鍵更新'),undefined);assert.match(text(tree),/有效的精確目標版本/);assert.ok(invalid.calls.every(call=>call.method==='update:check'));invalid.unmount();
+});
+test('fresh observed installed version replaces an old parent inventory snapshot',async()=>{
+ const h=harness(async()=>[{...available,current:'2.0.0',latest:'2.0.0',hasUpdate:false,comparison:0}]);const props={installed:[native],loading:false,onChanged(){}};
+ h.render(props);await flush();const tree=h.render(props);assert.match(text(tree),/2\.0\.0 · profile/);assert.doesNotMatch(text(tree),/1\.0\.0 · profile/);assert.equal(button(tree,'一鍵更新'),undefined);h.unmount();
+});
 test('up-to-date rows and failed queries remain explicit, not absent',async()=>{
  let failed=false;const h=harness(async()=>{if(failed)throw new Error('offline');return [{...available,hasUpdate:false,latest:'1.0.0',comparison:0}];});const props={installed:[native],loading:false,onChanged(){}};
  h.render(props);await flush();assert.match(text(h.render(props)),/已符合此安裝來源/);
@@ -56,7 +67,7 @@ test('up-to-date rows and failed queries remain explicit, not absent',async()=>{
 });
 test('update failures describe rollback and never claim success or auto retry',async()=>{
  let changed=0;const h=harness(async method=>method==='update:apply'?{ok:false,error:'install failed',rollback:{attempted:true,ok:true}}:[available]);const props={installed:[native],loading:false,onChanged(){changed++;}};
- h.render(props);await flush();button(h.render(props),'一鍵更新').props.onClick();await flush();const result=text(h.render(props));assert.match(result,/更新失敗/);assert.match(result,/回復成功/);assert.doesNotMatch(result,/更新完成/);assert.equal(changed,0);assert.equal(h.calls.length,2);h.unmount();
+ h.render(props);await flush();button(h.render(props),'一鍵更新').props.onClick();await flush();const result=text(h.render(props));assert.match(result,/更新失敗/);assert.match(result,/回復成功/);assert.doesNotMatch(result,/更新完成/);assert.equal(changed,1,'failed update refreshes inventory too');assert.equal(h.calls.length,3);assert.equal(h.calls.at(-1).method,'update:check');assert.equal(h.calls.at(-1).args.force,true);assert.equal(h.calls.filter(c=>c.method==='update:apply').length,1,'refresh never retries the update');h.unmount();
 });
 test('60 second batch timeout is retryable and ignores late/aborted responses',async()=>{
  const h=harness(), seen=[], errors=[], busy=[], calls=[];let pending=deferred();
@@ -70,5 +81,5 @@ test('60 second batch timeout is retryable and ignores late/aborted responses',a
 test('unmounted updates abort and cannot publish stale results',async()=>{
  const pending=deferred();let changed=0;const h=harness(async method=>method==='update:apply'?pending.promise:[available]);const props={installed:[native],loading:false,onChanged(){changed++;}};
  h.render(props);await flush();button(h.render(props),'一鍵更新').props.onClick();h.unmount();assert.equal(h.calls.at(-1).signal.aborted,true);pending.resolve({ok:true,applied:true});await flush();assert.equal(changed,0);
- assert.ok(source.includes('任務追蹤版 .4'));assert.doesNotMatch(source,/api\("update:self"/);
+ assert.ok(source.includes('任務追蹤版 .'+JSON.parse(fs.readFileSync(new URL('./package.json',import.meta.url),'utf8')).version.split('.').at(-1)));assert.doesNotMatch(source,/api\("update:self"/);
 });

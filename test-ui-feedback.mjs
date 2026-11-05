@@ -11,6 +11,7 @@ function section(start, end) {
   return source.slice(a, b);
 }
 const helpers = section('\t\tfunction semanticFeedback(', '\t\t/** 只停止 UI')
+  + section('\t\tfunction taskTime(', '\t\tfunction taskDiagnostic(')
   + section('\t\tfunction hasInstalledIdentity(', '\t\tfunction InstalledTab(');
 const h = vm.createContext({});
 vm.runInContext(helpers, h);
@@ -83,29 +84,34 @@ await pendingSearch;
 assert.equal(search.state.Results, undefined, 'obsolete request must not publish results');
 console.log('PASS actual search handler: success, empty, fallback, failures and stale response');
 
+const verifiedVersion = { before: '1.0.0', expected: '2.0.0', installed: '2.0.0', inventory: '2.0.0', status: 'verified', checkedAt: 12345 };
 const installedRuntime = {
   mountedRef: { current: true }, checkError: '',
-  updateMap: new Proxy({}, { get: () => ({ hasUpdate: true, canUpdate: true, status: 'ok' }) }),
-  beginMutation: () => new AbortController(), endMutation() {}, checkNow() {},
+  updateMap: new Proxy({}, { get: () => ({ hasUpdate: true, canUpdate: true, status: 'ok', latest: '2.0.0' }) }),
+  beginMutation: () => new AbortController(), endMutation() {}, checkNow() {}, setUpdateOutcomes() {},
 };
-const updateBody = section('\t\t\tconst updatePlugin = async', '\t\t\t/** Every managed row');
+const updateBody = section('\t\t\tconst updatePlugin = async', '\t\t\tconst renderOutcome');
 const uninstallBody = section('\t\t\tconst uninstall = async', '\t\t\t/** P0-1 装后四态验证');
 for (const action of ['updatePlugin', 'uninstall']) {
   for (const rollbackOk of [true, false]) {
-    let changed = 0, notice = '', calls = [];
+    let changed = 0, notice = '', calls = [], refreshes = [], outcomes = {};
     const context = vm.createContext({
       ...installedRuntime, updating: null,
       api: async method => { calls.push(method); return { ok: false, applied: false, error: 'native failure', rollback: { attempted: true, ok: rollbackOk, error: 'restore failure' } }; },
       reportOperation: text => { notice = text; },
       onChanged: () => changed++, setUpdating() {}, setOperationNotice() {}, setBusy() {}, setConfirming() {},
-      setUpdateMap() { assert.fail('failed update cannot remove update badge'); }, setVerifMap() {},
+      setUpdateMap(update) { const fresh=update({test:{hasUpdate:true},other:{hasUpdate:true}}); assert.equal(fresh.test,undefined,'discard the pre-operation observation before rereading'); assert.equal(fresh.other.hasUpdate,true,'do not erase unrelated rows'); }, setVerifMap() {},
+      setUpdateOutcomes(value) { outcomes = value(outcomes); },
+      checkNow(force) { refreshes.push(force); },
     });
     vm.runInContext(helpers + (action === 'updatePlugin' ? updateBody : uninstallBody) + `\nthis.run = ${action};`, context);
     await context.run({ pluginId: 'test', localName: 'test' });
-    assert.equal(changed, 0);
+    assert.equal(changed, action === 'updatePlugin' ? 1 : 0, 'failed updates refresh inventory; failed removal never claims a successful change');
+    assert.deepEqual(refreshes, action === 'updatePlugin' ? [true] : [], 'update failure always forces a version recheck');
+    if (action === 'updatePlugin') assert.equal(outcomes.test.rollback.ok, rollbackOk, 'row retains exact rollback result');
     assert.equal(calls.length, 1, 'no auto approval, relax or retry');
-    assert.match(notice, /失败/);
-    assert.match(notice, rollbackOk ? /回復成功/ : /回復失败.*restore failure/);
+    assert.match(notice, /失[败敗]/);
+    assert.match(notice, rollbackOk ? /回復成功/ : /回復失[败敗].*restore failure/);
     assert.doesNotMatch(notice, /更新完成|卸载完成/);
   }
 }
@@ -113,7 +119,7 @@ for (const action of ['updatePlugin', 'uninstall']) {
   let changed = 0, notice = '';
   const context = vm.createContext({
     ...installedRuntime, updating: null,
-    api: async () => ({ ok: true, applied: true, application: 'restart-required', warnings: ['manager warning'] }),
+    api: async () => ({ ok: true, applied: true, application: 'restart-required', restartRequired: true, restartReason: 'native requires restart', version: '2.0.0', versionCheck: verifiedVersion, warnings: ['manager warning'] }),
     reportOperation: text => { notice = text; },
     onChanged: () => changed++, setUpdating() {}, setOperationNotice() {}, setBusy() {}, setConfirming() {},
     setUpdateMap() {}, setVerifMap() {},
@@ -121,7 +127,7 @@ for (const action of ['updatePlugin', 'uninstall']) {
   vm.runInContext(helpers + (action === 'updatePlugin' ? updateBody : uninstallBody) + `\nthis.run = ${action};`, context);
   await context.run({ pluginId: 'test', localName: 'test' });
   assert.equal(changed, 1);
-  assert.match(notice, /完成.*需要重启.*manager warning/);
+  assert.match(notice, action === 'updatePlugin' ? /更新完成.*手動重開 DSH.*native requires restart.*manager warning/ : /完成.*需要重启.*manager warning/);
 }
 console.log('PASS actual update/removal handlers: rollback success/failure and restart-required success warnings');
 
@@ -145,7 +151,7 @@ for (const [action, body, method] of [
   let calls = [], notice = '';
   const context = vm.createContext({
     ...installedRuntime, updating: null, verifying: null,
-    api: async (name, args) => { calls.push({ name, args }); return { ok: true, applied: true, state: 'live' }; },
+    api: async (name, args) => { calls.push({ name, args }); return { ok: true, applied: true, state: 'live', version: '2.0.0', versionCheck: verifiedVersion }; },
     reportOperation: text => { notice = text; }, toast() {}, activationText: () => 'live',
     onChanged() {}, setUpdating() {}, setOperationNotice() {}, setBusy() {}, setConfirming() {},
     setUpdateMap() {}, setVerifMap() {}, setVerifying() {},
@@ -156,6 +162,8 @@ for (const [action, body, method] of [
   assert.equal(calls[0].name, method);
   assert.equal(calls[0].args.localName, nativeRow.localName);
   assert.equal(Object.hasOwn(calls[0].args, 'pluginId'), false, 'never guess a market identity');
+  if (action === 'updatePlugin') assert.equal(JSON.stringify(calls[0].args), JSON.stringify({ localName: nativeRow.localName, targetVersion: '2.0.0' }), 'native update pins the exact visible source target');
+  else assert.equal(Object.hasOwn(calls[0].args, 'targetVersion'), false, 'uninstall/verify arguments do not gain update-only fields');
   calls = [];
   await context.run({ ...nativeRow, pluginId: 'known-market-id' });
   assert.equal(calls[0].args.localName, nativeRow.localName);
