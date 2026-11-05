@@ -1,0 +1,49 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@dsh-market/core':
+        specifier: 0.4.15
+        version: 0.4.15
+      '@dsh-market/schema':
+        specifier: 0.1.4
+        version: 0.1.4
+      semver:
+        specifier: 7.7.2
+        version: 7.7.2
+
+packages:
+
+  '@dsh-market/core@0.4.15':
+    resolution: {integrity: sha512-605BXHE0VxtsOnZVB2r+05LSb+wbykMlFE3nhpRem3j3l0H1RkjzsaEku/1kHpEJf9rdAjE5FKdh3O8CHMapQg==}
+
+  '@dsh-market/schema@0.1.4':
+    resolution: {integrity: sha512-45LOD9rBAyBPARoWCyAyEU0viDB6CXI++DTKWU9ykEVAFeZnI7EKwfiijFIh7vyPOz/tv4FdF0ZgFxIb5vSZMA==}
+
+  fuse.js@7.5.0:
+    resolution: {integrity: sha512-sQtrEfA+ez/3G0cCZecF70oqpCRttCexYUG4mUrtWL49ULUzUyxokt5kyqwtKzj1270RaKih+hcP3qLcumccow==}
+    engines: {node: '>=10'}
+
+  semver@7.7.2:
+    resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+snapshots:
+
+  '@dsh-market/core@0.4.15':
+    dependencies:
+      '@dsh-market/schema': 0.1.4
+      fuse.js: 7.5.0
+
+  '@dsh-market/schema@0.1.4': {}
+
+  fuse.js@7.5.0: {}
+
+  semver@7.7.2: {}

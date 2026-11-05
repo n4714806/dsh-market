@@ -1,0 +1,59 @@
+[
+  {
+    "version": "0.28.2",
+    "tagCommit": "b0e0fab50e68f54b07a1fc1e7898030409c7d979",
+    "npmTarball": "https://registry.npmjs.org/dsh-better-sidebar/-/dsh-better-sidebar-0.28.2.tgz",
+    "registryTarballGithubPeerAgreement": true,
+    "dshPeers": {
+      "@deepseek-ai/dsh-agent": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-client-locale": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-client-ui-conversation": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-client-ui-primitives": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-client-ui-settings": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-client-ui-sidebar-right": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-client-ui-slots": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-host-webserver": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-llm": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-session": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-settings": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-subagent": "^0.2.1-rc.1",
+      "@deepseek-ai/dsh-tools": "^0.2.1-rc.1"
+    },
+    "engines": {
+      "node": ">=20"
+    },
+    "licenseIdentical": true,
+    "packageSha256": "5f78a2cb9cd70515fe575b46a01e4c2c9e4e4f21e58e43a0d9b0c6f972f9974c",
+    "githubPackageSha256": "47c340fa31cc3c5cd50ea9842180a6babda067caeaa08979648f466a6a22f3e3",
+    "licenseSha256": "f4d265194e0824721af0592462a71fe750c04db3565c23c5d6c65fdee25fb4b0"
+  },
+  {
+    "version": "0.30.1",
+    "tagCommit": "0b6293f05145d6852428a05035d5ea0f370992be",
+    "npmTarball": "https://registry.npmjs.org/dsh-better-sidebar/-/dsh-better-sidebar-0.30.1.tgz",
+    "registryTarballGithubPeerAgreement": true,
+    "dshPeers": {
+      "@deepseek-ai/dsh-agent": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-locale": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-ui-conversation": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-ui-input-trigger": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-ui-primitives": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-ui-settings": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-ui-sidebar-right": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-client-ui-slots": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-host-webserver": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-llm": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-session": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-settings": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-subagent": "^0.2.2-rc.1",
+      "@deepseek-ai/dsh-tools": "^0.2.2-rc.1"
+    },
+    "engines": {
+      "node": ">=20"
+    },
+    "licenseIdentical": true,
+    "packageSha256": "27dc968b0bb89b55d6bd10f8d115e053900f872640f18d1cfc052fee44572234",
+    "githubPackageSha256": "f6c766af49ccfc41fe9f4595d7d5b763eb31dc44b1ead3bffd2ab2af0bc68bb3",
+    "licenseSha256": "f4d265194e0824721af0592462a71fe750c04db3565c23c5d6c65fdee25fb4b0"
+  }
+]
