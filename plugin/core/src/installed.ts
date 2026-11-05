@@ -123,8 +123,8 @@ export function splitNameVersion(name: string): {
  * 用已装依赖名匹配市场条目（issue #56：兼容 scoped 包名的误判）。
  * 归一化口径：
  *   - 先按原名精确匹配 name / fullName（无 scope 或恰好同名）；
- *   - 对 `@scope/pkg`：`pkg` 对齐仓库名 `name`（npm 包名常等于仓库名）；
- *     `scope/pkg` 对齐 `owner/repo`（GitHub owner 大小写不敏感，npm scope 必须小写）。
+ *   - 对 `@scope/pkg`：优先用 `scope/pkg` 对齐 `owner/repo`；
+ *     仅非通用且无同名冲突的 `pkg` 才保留仓库名兼容匹配。
  * 两种都试，命中即返回；均未命中返回 null。
  */
 export function matchMarketPlugin(
@@ -140,10 +140,19 @@ export function matchMarketPlugin(
     const [scope, ...rest] = d.slice(1).split("/");
     const pkg = rest.join("/");
     if (pkg) {
-      const byRepo = byName.get(pkg);
-      if (byRepo) return byRepo;
       const byScopedFull = byFull.get(`${scope}/${pkg}`);
       if (byScopedFull) return byScopedFull;
+      // 通用模块名没有 namespace 信息，不能把 @dsh-market/plugin
+      // 当成 @dsh-remote/plugin。具体旧包名仍保留 #56 / #288 的兼容路径。
+      if (/^(?:plugins?|bundles?|core|ui)$/.test(pkg)) return null;
+      const byRepo = byName.get(pkg);
+      if (byRepo) {
+        // byName 会覆盖同名条目；用完整索引检查，避免由收录顺序决定结果。
+        const conflicts = [...byFull.values()].some(
+          (p) => p.name.toLowerCase() === pkg && p.id !== byRepo.id,
+        );
+        if (!conflicts) return byRepo;
+      }
     }
   }
   return null;

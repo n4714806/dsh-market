@@ -95,6 +95,34 @@ describe("matchMarketPlugin（issue #56 scoped 归一化）", () => {
     expect(matchMarketPlugin("acme/plain-dsh-tool", byName, byFull)?.id).toBe("acme/plain-dsh-tool");
   });
 
+  it("通用 scoped basename 不跨 namespace 匹配", () => {
+    for (const name of ["plugin", "plugins", "bundle", "bundles", "core", "ui"]) {
+      const remote = plugin({ id: `remote-owner/${name}`, name });
+      expect(matchMarketPlugin(
+        `@dsh-market/${name}`,
+        new Map([[name, remote]]),
+        new Map([[remote.fullName, remote]]),
+      )).toBeNull();
+    }
+    const exact = plugin({ id: "market-owner/market", name: "@dsh-market/plugin" });
+    expect(matchMarketPlugin("@dsh-market/plugin", new Map([[exact.name, exact]]), new Map())).toBe(exact);
+  });
+
+  it("同名市场条目不因顺序误配，明确 scope/repo 仍优先", () => {
+    const first = plugin({ id: "first/dsh-tool", name: "dsh-tool" });
+    const second = plugin({ id: "second/dsh-tool", name: "dsh-tool" });
+    for (const entries of [[first, second], [second, first]]) {
+      const names = new Map(entries.map((p) => [p.name, p]));
+      const full = new Map(entries.map((p) => [p.fullName, p]));
+      expect(matchMarketPlugin("@unknown/dsh-tool", names, full)).toBeNull();
+      expect(matchMarketPlugin("@first/dsh-tool", names, full)).toBe(first);
+    }
+  });
+
+  it("保留无歧义的具体旧包名兼容", () => {
+    expect(matchMarketPlugin("@legacy-scope/dsh-agent-teams", byName, byFull)).toBe(scopedPlugin);
+  });
+
   it("完全不匹配 → null", () => {
     expect(matchMarketPlugin("@other/unknown-thing", byName, byFull)).toBeNull();
   });

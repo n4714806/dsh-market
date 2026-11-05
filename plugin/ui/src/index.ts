@@ -399,9 +399,15 @@ export function apply(ctx: {
         ].join('\n')
         let text = ''
         try {
+          // 每次请求读取全局默认选择，设置变更无需重载市场插件。
+          const defaults = ctx.get('agentDefaultModel') as {
+            currentSelection(): { provider: string; model: string; reasoningEffort?: string }
+          } | undefined
+          if (!defaults) throw new Error('默认模型服务不可用')
+          const selection = defaults.currentSelection()
+          if (!selection?.provider || !selection?.model) throw new Error('尚未设置默认模型')
           const stream = llm.stream({
-            provider: 'opencode-go',
-            model: 'deepseek-v4-flash',
+            ...selection,
             messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
           })
           for await (const chunk of stream) {

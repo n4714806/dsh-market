@@ -34,7 +34,7 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build",
-    "test": "node test/client-dual-path.mjs && node test/subagent-compat.mjs",
+    "test": "node test/client-dual-path.mjs && node test/subagent-compat.mjs && node test/default-model.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
