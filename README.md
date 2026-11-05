@@ -1,6 +1,6 @@
 # Portable Market — 完整可攜修正版（非官方）
 
-這個分支是可以直接安裝的完整插件套件，不是小 patch，也不需要原電腦的資料夾。版本 **0.4.17-portable.1**，基於 `@dsh-market/plugin` 0.4.17。
+這個分支是可以直接安裝的完整插件套件，不是小 patch，也不需要原電腦的資料夾。版本 **0.4.17-portable.2**，基於 `@dsh-market/plugin` 0.4.17。
 
 ## 在家裡的電腦安裝
 
@@ -9,19 +9,19 @@
 3. 在內建「外掛」的新增安裝來源中輸入：
 
 ```text
-github:n4714806/dsh-market#portable-v0.4.17.1
+github:n4714806/dsh-market#portable-v0.4.17.2
 ```
 
 4. 完成後重新整理／重開 Harness。語意搜尋會使用那台電腦的全域預設模型，請自行設定／登入 AI 供應商。
 
-固定版本原始碼：https://github.com/n4714806/dsh-market/tree/portable-v0.4.17.1
+固定版本原始碼：https://github.com/n4714806/dsh-market/tree/portable-v0.4.17.2
 
 如果 Desktop 的新增介面只接受本機資料夾：下載上述固定版本的 ZIP、解壓縮，再將套件根目錄交給內建外掛管理器安裝。讓管理器處理 production dependencies，不要手改 profile 設定。
 
 CLI 已安裝且可用時，可在**目標 profile**執行（下例的 `web` 請換成實際名稱）：
 
 ```sh
-dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.1
+dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.2
 ```
 
 不需要在家裡重現修正過程，也不要執行這個上游大型 repository 的一般開發建置命令。此分支根目錄本身就是已建好的 bundle，沒有 prepare/install/build lifecycle scripts。
@@ -35,6 +35,17 @@ dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.1
 - registry 更新失敗時嘗試還原精確舊版與原 enabled 狀態，還原結果明確顯示。
 - 語意搜尋跟隨全域預設 provider/model/reasoning effort，顯示模型與降級原因，具有逾時保護。
 - 包含回歸測試；production dependencies 固定為已測版本。
+
+## 任務追蹤與來源版本（portable.2）
+
+- 「安裝任務」可重新開啟，顯示階段、時間線、結果、錯誤和完整子會話 ID；只在分頁可見時每 3 秒查詢，15 秒無回應會明確報錯。
+- 任務先落盤才開始操作。保留最近 100 筆、每筆 50 個事件；保留已用 ID 的雜湊以避免重複執行。重啟時未完成任務標為「已中斷」，不自動重試。只支援單一 Host 寫入同一 profile。
+- AI 審查／診斷必須明確選擇父會話，並確認真實子會話與結果管道後才稱為委派。非原生插件的 AI 路徑只要求診斷，不會由市場自動執行模型建議命令。完整建議留在子會話，不存入任務診斷副本。
+- 取消表示已提出停止要求，不等於所有變更已回復。逾時、停止狀態不明及重啟需求會顯示「需要處理」。舊版未保存的歷史任務無法補回。
+- 安裝視窗分別查詢 npm `dist-tags.latest` 與 GitHub 最新正式 release，顯示來源、查詢時間及快取狀態；可手動略過 5 分鐘快取。查詢失敗、限流、找不到 release 都不是「已是最新版」。
+- 已裝更新檢查優先使用宿主**明確設定的 registry**，其次才是 pnpm 解析來源；不拿 GitHub 修改時間替代失敗的 npm 查詢。Git／本機來源不假裝可比較 npm 版本。
+- 市場首頁顯示索引生成時間，並可重新取得索引。**這不是全市場即時同步**：新條目收錄仍受上游索引發布進度影響；GitHub release 與 npm 是不同發布渠道，不保證版本號相同。
+- fork 使用固定 tag，不以官方市場 npm 版本判斷自我更新。更新此市場請用內建外掛管理；安裝後重新整理／重開 GUI，確認看得到「安裝任務」及「任務追蹤版 .2」。
 
 ## 不包含個人資料
 

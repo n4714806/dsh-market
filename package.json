@@ -1,30 +1,27 @@
 {
   "name": "@dsh-market/plugin",
-  "version": "0.4.17-portable.1",
+  "version": "0.4.17-portable.2",
   "description": "非官方可攜式插件市場修正版：原生安裝管理、精確已裝辨識、全域預設模型與明確狀態。",
   "type": "module",
-  "main": "lib/index-optimized-v2.js",
+  "main": "lib/index-tracked.js",
   "exports": {
     ".": {
-      "default": "./lib/index-optimized-v2.js"
+      "default": "./lib/index-tracked.js"
     },
     "./invariant": {
       "default": "./lib/invariant.js"
     },
     "./client": {
-      "default": "./lib/client-optimized-v2.js"
+      "default": "./lib/client-tasks.js"
     },
     "./package.json": "./package.json",
     "./icon": "./icon.svg",
     "./locale/*.json": "./locale/*.json"
   },
   "files": [
-    "lib/index-optimized-v2.js",
     "lib/native-install-progress.js",
     "lib/profile-runtime.js",
-    "lib/client-optimized-v2.js",
     "lib/invariant.js",
-    "lib/subagent-compat.js",
     "lib/semantic-model.js",
     "lib/managed-inventory.js",
     "lib/managed-mutations.js",
@@ -40,7 +37,17 @@
     "icon.svg",
     "locale/en.json",
     "locale/zh.json",
-    "locale/zh-TW.json"
+    "locale/zh-TW.json",
+    "lib/index-tracked.js",
+    "lib/client-tasks.js",
+    "lib/install-task-store.js",
+    "lib/subagent-tracked.js",
+    "lib/source-versions.js",
+    "lib/managed-source-updates.js",
+    "test-task-backend.mjs",
+    "test-task-ui.mjs",
+    "test-source-versions.mjs",
+    "test-source-integration.mjs"
   ],
   "dsh": {
     "bundle": {
@@ -52,7 +59,7 @@
     }
   },
   "scripts": {
-    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs"
+    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs"
   },
   "dependencies": {
     "@dsh-market/core": "0.4.15",

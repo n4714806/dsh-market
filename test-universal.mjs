@@ -68,7 +68,7 @@ await test('abort during manager installation cancels that request only',async()
   const ac=new AbortController();const pending=nativeInstall(ctx,plugin,{installId:'test'},ac.signal);await started;ac.abort();await assert.rejects(pending,/cancelled/);
 });
 await test('active entry has no fixed desktop/env routing and preserves polling records',()=>{
-  const s=readFileSync(new URL('./lib/index-optimized-v2.js',import.meta.url),'utf8');
+  const s=readFileSync(new URL(JSON.parse(readFileSync(new URL('./package.json',import.meta.url),'utf8')).exports['.'].default,import.meta.url),'utf8');
   assert.ok(!s.includes('"desktop"'));assert.ok(!s.includes('process.env.DSH_PROFILE'));
   assert.ok(s.includes('requireTargetProfile(ctx, args.targetProfile)'));
   assert.ok(s.includes('semanticModel(ctx, prompt)'));

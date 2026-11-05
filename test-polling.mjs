@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 // Exercise the actual Desktop bundle helper without loading React or making requests.
-const source = readFileSync(new URL('./lib/client-optimized-v2.js', import.meta.url), 'utf8');
+const source = readFileSync(new URL(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).exports['./client'].default, import.meta.url), 'utf8');
 const start = source.indexOf('\t\tfunction watchInstallStatus(');
 const end = source.indexOf('\t\tconst GH_LOGIN_KEY', start);
 assert(start >= 0 && end > start, 'Desktop polling helper must exist');

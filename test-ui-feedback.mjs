@@ -4,7 +4,7 @@ import vm from 'node:vm';
 
 // Tests actual Desktop functions with mocked RPC/state setters, not a visual renderer.
 // No network, installs, approvals, dependencies or server required.
-const source = readFileSync(new URL('./lib/client-optimized-v2.js', import.meta.url), 'utf8');
+const source = readFileSync(new URL(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).exports['./client'].default, import.meta.url), 'utf8');
 function section(start, end) {
   const a = source.indexOf(start), b = source.indexOf(end, a);
   assert(a >= 0 && b > a, `Missing source section ${start}`);
@@ -177,6 +177,7 @@ for (const success of [true, false]) {
   const methods = [];
   const context = vm.createContext({
     plugin: { id: 'test', name: 'test' }, security: false,
+    parentSessionId: '', modalController: { current: new AbortController() },
     lastInstallIdRef: { current: '' }, initialWatchStopRef: { current: null }, t1WatchStopRef: { current: null },
     PENDING_INSTALL_KEY: 'pending', localStorage: { setItem() {}, removeItem() {} },
     RpcError: class extends Error { constructor(message, classified) { super(message); this.classified = classified; } },
