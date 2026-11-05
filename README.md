@@ -1,6 +1,6 @@
 # Portable Market — 完整可攜修正版（非官方）
 
-這個分支是可以直接安裝的完整插件套件，不是小 patch，也不需要原電腦的資料夾。版本 **0.4.17-portable.2**，基於 `@dsh-market/plugin` 0.4.17。
+這個分支是可以直接安裝的完整插件套件，不是小 patch，也不需要原電腦的資料夾。版本 **0.4.17-portable.3**，基於 `@dsh-market/plugin` 0.4.17。
 
 ## 在家裡的電腦安裝
 
@@ -9,19 +9,19 @@
 3. 在內建「外掛」的新增安裝來源中輸入：
 
 ```text
-github:n4714806/dsh-market#portable-v0.4.17.2
+github:n4714806/dsh-market#portable-v0.4.17.3
 ```
 
 4. 完成後重新整理／重開 Harness。語意搜尋會使用那台電腦的全域預設模型，請自行設定／登入 AI 供應商。
 
-固定版本原始碼：https://github.com/n4714806/dsh-market/tree/portable-v0.4.17.2
+固定版本原始碼：https://github.com/n4714806/dsh-market/tree/portable-v0.4.17.3
 
 如果 Desktop 的新增介面只接受本機資料夾：下載上述固定版本的 ZIP、解壓縮，再將套件根目錄交給內建外掛管理器安裝。讓管理器處理 production dependencies，不要手改 profile 設定。
 
 CLI 已安裝且可用時，可在**目標 profile**執行（下例的 `web` 請換成實際名稱）：
 
 ```sh
-dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.2
+dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.3
 ```
 
 不需要在家裡重現修正過程，也不要執行這個上游大型 repository 的一般開發建置命令。此分支根目錄本身就是已建好的 bundle，沒有 prepare/install/build lifecycle scripts。
@@ -36,6 +36,16 @@ dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.2
 - 語意搜尋跟隨全域預設 provider/model/reasoning effort，顯示模型與降級原因，具有逾時保護。
 - 包含回歸測試；production dependencies 固定為已測版本。
 
+## 已裝清單直接更新（portable.3）
+
+進入「已裝」就會自動檢查來源版本；「檢查更新」可略過快取。每個套件直接顯示目前版本、可更新版本、檢查中／失敗／已符合來源等狀態。
+
+安全可更新的 registry 套件旁會出現「一鍵更新」，點擊才執行宿主更新；成功後重新讀取清單與版本，失敗明確顯示還原結果。不會自動更新全部套件、不會批准額外腳本，也不會因查詢發現新版就直接安裝。
+
+Git、本機、別名、受保護或無法精確還原的來源會顯示不可一鍵更新原因；查到新版與可以安全更新是兩回事。fork 市場自身不得誤顯示「portable → 官方版」升級，包含仍呼叫舊版 self-update API 的前端。
+
+可用 `client:build` RPC 查驗 Host 真正提供的 Client artifact，而不是只看套件版本號；API 回應不代表瀏覽器已重新載入。已快取舊 Client 路徑的 Host 也會取得相同新版內容：發佈保留同步的相容檔，啟用時透過宿主 `clientModules.rebuilt` 發布完成的 artifact。更新後請重新整理 GUI，確認出現「任務追蹤版 .3」。
+
 ## 任務追蹤與來源版本（portable.2）
 
 - 「安裝任務」可重新開啟，顯示階段、時間線、結果、錯誤和完整子會話 ID；只在分頁可見時每 3 秒查詢，15 秒無回應會明確報錯。
@@ -45,7 +55,7 @@ dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.2
 - 安裝視窗分別查詢 npm `dist-tags.latest` 與 GitHub 最新正式 release，顯示來源、查詢時間及快取狀態；可手動略過 5 分鐘快取。查詢失敗、限流、找不到 release 都不是「已是最新版」。
 - 已裝更新檢查優先使用宿主**明確設定的 registry**，其次才是 pnpm 解析來源；不拿 GitHub 修改時間替代失敗的 npm 查詢。Git／本機來源不假裝可比較 npm 版本。
 - 市場首頁顯示索引生成時間，並可重新取得索引。**這不是全市場即時同步**：新條目收錄仍受上游索引發布進度影響；GitHub release 與 npm 是不同發布渠道，不保證版本號相同。
-- fork 使用固定 tag，不以官方市場 npm 版本判斷自我更新。更新此市場請用內建外掛管理；安裝後重新整理／重開 GUI，確認看得到「安裝任務」及「任務追蹤版 .2」。
+- fork 使用固定 tag，不以官方市場 npm 版本判斷自我更新。更新此市場請用內建外掛管理；安裝後重新整理／重開 GUI，確認看得到「安裝任務」及「任務追蹤版 .3」。
 
 ## 不包含個人資料
 

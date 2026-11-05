@@ -83,13 +83,18 @@ await pendingSearch;
 assert.equal(search.state.Results, undefined, 'obsolete request must not publish results');
 console.log('PASS actual search handler: success, empty, fallback, failures and stale response');
 
-const updateBody = section('\t\t\tconst updatePlugin = async', '\t\t\t/** 单行检测状态');
-const uninstallBody = section('\t\t\tconst uninstall = async', '\t\t\t/** 检查更新');
+const installedRuntime = {
+  mountedRef: { current: true }, checkError: '',
+  updateMap: new Proxy({}, { get: () => ({ hasUpdate: true, canUpdate: true, status: 'ok' }) }),
+  beginMutation: () => new AbortController(), endMutation() {}, checkNow() {},
+};
+const updateBody = section('\t\t\tconst updatePlugin = async', '\t\t\t/** Every managed row');
+const uninstallBody = section('\t\t\tconst uninstall = async', '\t\t\t/** P0-1 装后四态验证');
 for (const action of ['updatePlugin', 'uninstall']) {
   for (const rollbackOk of [true, false]) {
     let changed = 0, notice = '', calls = [];
     const context = vm.createContext({
-      updating: null,
+      ...installedRuntime, updating: null,
       api: async method => { calls.push(method); return { ok: false, applied: false, error: 'native failure', rollback: { attempted: true, ok: rollbackOk, error: 'restore failure' } }; },
       reportOperation: text => { notice = text; },
       onChanged: () => changed++, setUpdating() {}, setOperationNotice() {}, setBusy() {}, setConfirming() {},
@@ -107,7 +112,7 @@ for (const action of ['updatePlugin', 'uninstall']) {
 for (const action of ['updatePlugin', 'uninstall']) {
   let changed = 0, notice = '';
   const context = vm.createContext({
-    updating: null,
+    ...installedRuntime, updating: null,
     api: async () => ({ ok: true, applied: true, application: 'restart-required', warnings: ['manager warning'] }),
     reportOperation: text => { notice = text; },
     onChanged: () => changed++, setUpdating() {}, setOperationNotice() {}, setBusy() {}, setConfirming() {},
@@ -139,7 +144,7 @@ for (const [action, body, method] of [
 ]) {
   let calls = [], notice = '';
   const context = vm.createContext({
-    updating: null, verifying: null,
+    ...installedRuntime, updating: null, verifying: null,
     api: async (name, args) => { calls.push({ name, args }); return { ok: true, applied: true, state: 'live' }; },
     reportOperation: text => { notice = text; }, toast() {}, activationText: () => 'live',
     onChanged() {}, setUpdating() {}, setOperationNotice() {}, setBusy() {}, setConfirming() {},

@@ -1,6 +1,6 @@
 {
   "name": "@dsh-market/plugin",
-  "version": "0.4.17-portable.2",
+  "version": "0.4.17-portable.3",
   "description": "非官方可攜式插件市場修正版：原生安裝管理、精確已裝辨識、全域預設模型與明確狀態。",
   "type": "module",
   "main": "lib/index-tracked.js",
@@ -47,7 +47,12 @@
     "test-task-backend.mjs",
     "test-task-ui.mjs",
     "test-source-versions.mjs",
-    "test-source-integration.mjs"
+    "test-source-integration.mjs",
+    "lib/client-build-info.js",
+    "test-client-build.mjs",
+    "test-update-capability.mjs",
+    "test-installed-updates.mjs",
+    "lib/client-optimized-v2.js"
   ],
   "dsh": {
     "bundle": {
@@ -59,7 +64,7 @@
     }
   },
   "scripts": {
-    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs"
+    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs && node test-client-build.mjs && node --test test-update-capability.mjs test-installed-updates.mjs"
   },
   "dependencies": {
     "@dsh-market/core": "0.4.15",
@@ -80,6 +85,6 @@
   },
   "engines": {
     "dsh": ">=0.2.1-rc.5 <0.3.0",
-    "node": ">=20"
+    "node": ">=20.3.0"
   }
 }

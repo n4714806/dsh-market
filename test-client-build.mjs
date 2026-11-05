@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {clientBuildInfo} from './lib/client-build-info.js';
+import {readFileSync} from 'node:fs';
+assert.equal(readFileSync(new URL('./lib/client-tasks.js',import.meta.url),'utf8'),readFileSync(new URL('./lib/client-optimized-v2.js',import.meta.url),'utf8'),'legacy cached path must serve the same release bytes');
+assert.equal((await clientBuildInfo({get:()=>null})).available,false);
+let body='const TASK_STATUS = {}; 任務追蹤版 .3 一鍵更新';
+const ctx={get:()=>({graph:()=>({entries:[{id:'@dsh-market/plugin',url:'/plugins/market.rev.js',rev:'rev'}]}),clientPath:()=>'/private/profile/lib/client-tasks.js',fetchBundle:async request=>{assert.equal(new URL(request.url).pathname,'/plugins/market.rev.js');return new Response(body)}})};
+let result=await clientBuildInfo(ctx);assert.equal(result.clientBuild,'portable.3');assert.equal(result.hasOneClickUpdates,true);assert.equal(result.hasOfficialSelfUpdate,false);assert.equal(result.file,'client-tasks.js');assert.ok(!JSON.stringify(result).includes('/private/profile'));
+body='api("update:self")';result=await clientBuildInfo(ctx);assert.equal(result.clientBuild,'legacy');assert.equal(result.hasTasks,false);assert.equal(result.hasOfficialSelfUpdate,true);
+console.log('PASS advertised artifact verification distinguishes actual client bytes from package version');

@@ -13,7 +13,7 @@ fail=true;[result]=await checkManagedSourceUpdates(ctx,[row],{fetchImpl,force:tr
 [result]=await checkManagedSourceUpdates(ctx,[{...row,localName:'@dsh-market/plugin'}],{fetchImpl,force:true});assert.equal(result.hasUpdate,null);assert.match(result.error,/fork/);assert.equal(calls,2);
 const gitCtx={get:()=>({listBundles:async()=>[{...bundle,source:'github:owner/repo#tag'}]})};
 [result]=await checkManagedSourceUpdates(gitCtx,[row],{fetchImpl:async()=>Response.json({tag_name:'v9.0.0',draft:false,prerelease:false}),force:true});assert.equal(result.hasUpdate,null);assert.equal(result.kind,'none');assert.match(result.error,/ref/);
-[result]=await checkManagedSourceUpdates(ctx,[{...row,version:'not-semver'}],{fetchImpl:async()=>Response.json({'dist-tags':{latest:'1.2.0'}}),force:true});assert.equal(result.hasUpdate,null);assert.match(result.error,/semver/);
+[result]=await checkManagedSourceUpdates({get:()=>({listBundles:async()=>[{...bundle,version:'not-semver'}]})},[row],{fetchImpl:async()=>Response.json({'dist-tags':{latest:'1.2.0'}}),force:true});assert.equal(result.hasUpdate,null);assert.match(result.error,/semver/);
 const src=readFileSync(new URL('./lib/client-tasks.js',import.meta.url),'utf8');const start=src.indexOf('function sourceObservationText('),end=src.indexOf('function SourceVersionInfo(',start);assert.ok(start>=0&&end>start);
 const {sourceObservationText,sourceUpdateText}=vm.runInNewContext(`(()=>{${src.slice(start,end)}return {sourceObservationText,sourceUpdateText};})()`);
 assert.match(sourceObservationText('npm',{status:'rate-limited',stale:true,version:'1.0.0'}),/不可當作最新/);
