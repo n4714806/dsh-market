@@ -89,7 +89,7 @@ test('market task entry survives catalog errors and modal explicitly selects par
  const h=harness(), tree=h.MarketPanel({mode:'main',onClose(){}});
  assert.ok(walk(tree).some(n=>n.type==='button'&&text(n)==='安裝任務'));
  const modal=h.InstallModal({plugin:{id:'x',name:'X'},onViewTasks(){}});
- assert.ok(walk(modal).some(n=>n.type==='button'&&text(n)==='查看安裝任務'));
+ assert.ok(walk(modal).some(n=>n.type==='button'&&text(n)==='檢視安裝任務'));
  const select=walk(modal).find(n=>n.type==='select'); assert.equal(select.props.value,'');
  assert.match(source,/tab === "tasks" \? El\(Boundary[^\n]+ : loadError/);
  assert.doesNotMatch(source,/AI 助手正在诊断安装命令|宿主将代为执行|api\("update:self"/);

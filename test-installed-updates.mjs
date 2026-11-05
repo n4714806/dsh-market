@@ -29,13 +29,13 @@ test('entry checks cached sources automatically; manual check forces refresh wit
  assert.match(text(h.render(props)),/尚未取得來源版本/); assert.equal(h.calls[0].method,'update:check');assert.equal(h.calls[0].args.force,false);
  assert.match(text(h.render(props)),/檢查中/);await flush();
  const tree=h.render(props);assert.match(text(tree),/1.0.0 → 2.0.0/);assert.ok(button(tree,'一鍵更新'));assert.equal(h.calls.length,1);
- button(tree,'检查更新').props.onClick();await flush();assert.equal(h.calls[1].args.force,true);assert.ok(h.calls.every(c=>c.method==='update:check'));h.unmount();
+ button(tree,'檢查更新').props.onClick();await flush();assert.equal(h.calls[1].args.force,true);assert.ok(h.calls.every(c=>c.method==='update:check'));h.unmount();
 });
 test('safe one-click uses native null-id identity once and refreshes list plus versions',async()=>{
  const apply=deferred();let changed=0;
  const h=harness(async method=>method==='update:apply'?apply.promise:[available]);const props={installed:[native],loading:false,onChanged(){changed++;}};
  h.render(props);await flush();const tree=h.render(props), update=button(tree,'一鍵更新');
- update.props.onClick();update.props.onClick();button(tree,'验证').props.onClick();button(tree,'检查更新').props.onClick();
+ update.props.onClick();update.props.onClick();button(tree,'驗證').props.onClick();button(tree,'檢查更新').props.onClick();
  assert.equal(h.calls.filter(c=>c.method==='update:apply').length,1);assert.equal(h.calls.filter(c=>c.method==='verify').length,0);
  assert.equal(JSON.stringify(h.calls.find(c=>c.method==='update:apply').args),JSON.stringify({localName:native.localName}));
  assert.equal(button(h.render(props),'更新中…').props.disabled,true);
@@ -52,11 +52,11 @@ test('unsafe source exposes newer version and reason, never one-click action',as
 test('up-to-date rows and failed queries remain explicit, not absent',async()=>{
  let failed=false;const h=harness(async()=>{if(failed)throw new Error('offline');return [{...available,hasUpdate:false,latest:'1.0.0',comparison:0}];});const props={installed:[native],loading:false,onChanged(){}};
  h.render(props);await flush();assert.match(text(h.render(props)),/已符合此安裝來源/);
- failed=true;button(h.render(props),'检查更新').props.onClick();await flush();assert.match(text(h.render(props)),/查詢失敗：offline/);assert.equal(button(h.render(props),'一鍵更新'),undefined);h.unmount();
+ failed=true;button(h.render(props),'檢查更新').props.onClick();await flush();assert.match(text(h.render(props)),/查詢失敗：offline/);assert.equal(button(h.render(props),'一鍵更新'),undefined);h.unmount();
 });
 test('update failures describe rollback and never claim success or auto retry',async()=>{
  let changed=0;const h=harness(async method=>method==='update:apply'?{ok:false,error:'install failed',rollback:{attempted:true,ok:true}}:[available]);const props={installed:[native],loading:false,onChanged(){changed++;}};
- h.render(props);await flush();button(h.render(props),'一鍵更新').props.onClick();await flush();const result=text(h.render(props));assert.match(result,/更新失败/);assert.match(result,/回復成功/);assert.doesNotMatch(result,/更新完成/);assert.equal(changed,0);assert.equal(h.calls.length,2);h.unmount();
+ h.render(props);await flush();button(h.render(props),'一鍵更新').props.onClick();await flush();const result=text(h.render(props));assert.match(result,/更新失敗/);assert.match(result,/回復成功/);assert.doesNotMatch(result,/更新完成/);assert.equal(changed,0);assert.equal(h.calls.length,2);h.unmount();
 });
 test('60 second batch timeout is retryable and ignores late/aborted responses',async()=>{
  const h=harness(), seen=[], errors=[], busy=[], calls=[];let pending=deferred();
@@ -70,5 +70,5 @@ test('60 second batch timeout is retryable and ignores late/aborted responses',a
 test('unmounted updates abort and cannot publish stale results',async()=>{
  const pending=deferred();let changed=0;const h=harness(async method=>method==='update:apply'?pending.promise:[available]);const props={installed:[native],loading:false,onChanged(){changed++;}};
  h.render(props);await flush();button(h.render(props),'一鍵更新').props.onClick();h.unmount();assert.equal(h.calls.at(-1).signal.aborted,true);pending.resolve({ok:true,applied:true});await flush();assert.equal(changed,0);
- assert.match(source,/任務追蹤版 \.3/);assert.doesNotMatch(source,/api\("update:self"/);
+ assert.ok(source.includes('任務追蹤版 .4'));assert.doesNotMatch(source,/api\("update:self"/);
 });

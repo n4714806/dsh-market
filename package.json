@@ -1,7 +1,7 @@
 {
   "name": "@dsh-market/plugin",
-  "version": "0.4.17-portable.3",
-  "description": "非官方可攜式插件市場修正版：原生安裝管理、精確已裝辨識、全域預設模型與明確狀態。",
+  "version": "0.4.17-portable.4",
+  "description": "非官方繁體中文外掛市場：原生安裝管理、可見更新與一鍵更新、任務追蹤、全域預設模型。",
   "type": "module",
   "main": "lib/index-tracked.js",
   "exports": {
@@ -52,7 +52,15 @@
     "test-client-build.mjs",
     "test-update-capability.mjs",
     "test-installed-updates.mjs",
-    "lib/client-optimized-v2.js"
+    "lib/client-optimized-v2.js",
+    "lib/zh-tw-data.js",
+    "lib/zh-tw-presentation.js",
+    "scripts/build-zh-tw.py",
+    "scripts/build-zh-tw-client.mjs",
+    "licenses/OPENCC-LICENSE.txt",
+    "licenses/OPENCC-NOTICE.txt",
+    "THIRD-PARTY-NOTICES.md",
+    "test-zh-tw-ui.mjs"
   ],
   "dsh": {
     "bundle": {
@@ -64,7 +72,8 @@
     }
   },
   "scripts": {
-    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs && node test-client-build.mjs && node --test test-update-capability.mjs test-installed-updates.mjs"
+    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs && node test-client-build.mjs && node --test test-update-capability.mjs test-installed-updates.mjs && node --test test-zh-tw-ui.mjs",
+    "build:zh-tw": "node scripts/build-zh-tw-client.mjs"
   },
   "dependencies": {
     "@dsh-market/core": "0.4.15",
