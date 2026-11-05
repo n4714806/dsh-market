@@ -1,6 +1,6 @@
 # Portable Market — 完整可攜修正版（非官方）
 
-這個分支是可以直接安裝的完整外掛套件，不是小 patch，也不需要原電腦的資料夾。版本 **0.4.17-portable.5**，基於 `@dsh-market/plugin` 0.4.17。
+這個分支是可以直接安裝的完整外掛套件，不是小 patch，也不需要原電腦的資料夾。版本 **0.4.17-portable.6**，基於 `@dsh-market/plugin` 0.4.17。
 
 ## 在家裡的電腦安裝
 
@@ -9,19 +9,19 @@
 3. 在內建「外掛」的新增安裝來源中輸入：
 
 ```text
-github:n4714806/dsh-market#portable-v0.4.17.5
+github:n4714806/dsh-market#portable-v0.4.17.6
 ```
 
 4. 完成後重新整理／重開 Harness。語意搜尋會使用那台電腦的全域預設模型，請自行設定／登入 AI 供應商。
 
-固定版本原始碼：https://github.com/n4714806/dsh-market/tree/portable-v0.4.17.5
+固定版本原始碼：https://github.com/n4714806/dsh-market/tree/portable-v0.4.17.6
 
 如果 Desktop 的新增介面只接受本機資料夾：下載上述固定版本的 ZIP、解壓縮，再將套件根目錄交給內建外掛管理器安裝。讓管理器處理 production dependencies，不要手改 profile 設定。
 
 CLI 已安裝且可用時，可在**目標 profile**執行（下例的 `web` 請換成實際名稱）：
 
 ```sh
-dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.5
+dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.6
 ```
 
 不需要在家裡重現修正過程，也不要執行這個上游大型 repository 的一般開發建置命令。此分支根目錄本身就是已建好的 bundle，沒有 prepare/install/build lifecycle scripts。
@@ -35,6 +35,22 @@ dsh plugin --profile web add github:n4714806/dsh-market#portable-v0.4.17.5
 - registry 更新失敗時嘗試還原精確舊版與原 enabled 狀態，還原結果明確顯示。
 - 語意搜尋跟隨全域預設 provider/model/reasoning effort，顯示模型與降級原因，具有逾時保護。
 - 包含回歸測試；production dependencies 固定為已測版本。
+
+## 相容修補工作台（portable.6，第一階段）
+
+市場新增「相容修補」頁，和 `market_compat` Agent 工具使用同一個 Host 控制器：
+
+- 「診斷相容來源」只讀公開 npm 宣告，優先找宣告相容的官方版本，不呼叫模型、不安裝。宣告相容不代表功能已驗證。
+- 使用者額外選擇 AI 才會準備草稿：當下全域預設模型、最多一次生成請求、4096 輸出 tokens、模型階段 90 秒。不是美元費用硬上限；取消或逾時仍可能已計費。
+- 每次診斷最多一次生成嘗試，失聯後重送或換 requestId 不會重複生成；若確實要重做，先重新診斷。
+- AI 沒有工具或代理權限，只回傳嚴格 JSON。Host 驗證來源完整性、相對路徑白名單、唯一前文與大小；不執行原始碼、shell、建置腳本、安裝腳本，不自動改版本限制。
+- 產物是「未驗證草稿 JSON」，附來源鎖定、模型資訊及修改前後雜湊，可複製匯出；**不是完整可安裝的修補套件**。沒有安裝、版本豁免或重啟端點。
+- 結構檢查與語法／執行／畫面測試分開顯示；目前後三者未執行。安全隔離建置、實機功能驗證、確認後安裝及回復屬後續階段，沒有假裝完成。
+- 任務保存於目前 profile 對應的工作台資料區；重啟會標示中斷，不自動恢復或重試。最多 50 筆、journal 2MiB、每份草稿 256KiB，滿額即停止，不清掉冪等歷史。
+- 「檢查上游」只比對版本／來源雜湊，不自動重套 patch 或啟動 AI。對外發布任何草稿前仍須人工確認授權及風險。
+- 第一版僅支援公開 npm HTTPS 來源；來源讀取有時間／大小／完整性限制，不安全或不支援的 tar 格式明確停止。HTTP 入口限制本機連線與本機 GUI authority、JSON 同源請求；遠端操作可走受宿主政策管理的 Agent 工具。
+
+首個 Better Sidebar 案例：0.30.1 宣告需 DSH 0.2.2-rc.1 系列，對 0.2.1-rc.5 會找出官方 0.28.2，而不是硬造 patch。這只是版本宣告診斷，未安裝或執行該外掛。
 
 ## 精確更新與版本核對（portable.5）
 

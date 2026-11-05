@@ -1,6 +1,6 @@
 {
   "name": "@dsh-market/plugin",
-  "version": "0.4.17-portable.5",
+  "version": "0.4.17-portable.6",
   "description": "非官方繁體中文外掛市場：原生安裝管理、可見更新與一鍵更新、任務追蹤、全域預設模型。",
   "type": "module",
   "main": "lib/index-tracked.js",
@@ -64,7 +64,19 @@
     "lib/update-operation.js",
     "lib/update-version-check.js",
     "test-update-version-check.mjs",
-    "test-update-outcome-ui.mjs"
+    "test-update-outcome-ui.mjs",
+    "lib/compat-artifact.js",
+    "lib/compat-model.js",
+    "lib/compat-source.js",
+    "lib/compat-store.js",
+    "lib/compat-workbench.js",
+    "lib/compat-tool.js",
+    "lib/compat-http.js",
+    "test-compat-model.mjs",
+    "test-compat-source.mjs",
+    "test-compat-store.mjs",
+    "test-compat-workbench.mjs",
+    "test-compat-ui.mjs"
   ],
   "dsh": {
     "bundle": {
@@ -76,12 +88,13 @@
     }
   },
   "scripts": {
-    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs && node test-client-build.mjs && node --test test-update-capability.mjs test-installed-updates.mjs && node --test test-zh-tw-ui.mjs && node --test test-update-version-check.mjs test-update-outcome-ui.mjs",
+    "test": "node test-universal.mjs && node test-default-model.mjs && node test-polling.mjs && node test-managed-inventory.mjs && node test-managed-mutations.mjs && node test-ui-feedback.mjs && node --test test-task-backend.mjs test-task-ui.mjs test-source-versions.mjs && node test-source-integration.mjs && node test-client-build.mjs && node --test test-update-capability.mjs test-installed-updates.mjs && node --test test-zh-tw-ui.mjs && node --test test-update-version-check.mjs test-update-outcome-ui.mjs && node --test test-compat-model.mjs test-compat-source.mjs test-compat-store.mjs test-compat-workbench.mjs test-compat-ui.mjs",
     "build:zh-tw": "node scripts/build-zh-tw-client.mjs"
   },
   "dependencies": {
     "@dsh-market/core": "0.4.15",
-    "@dsh-market/schema": "0.1.4"
+    "@dsh-market/schema": "0.1.4",
+    "semver": "7.7.2"
   },
   "keywords": [
     "dsh",
