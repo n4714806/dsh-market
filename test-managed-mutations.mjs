@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {managedUpdate,managedRemove,managedVerify} from './lib/managed-mutations.js';
+let total=0;const test=async(n,fn)=>{await fn();console.log('PASS '+n);total++};
+function fixture(overrides={}) {
+ const bundle={name:'fixture',version:'1.0.0',source:'fixture@^1.0.0',enabled:false,installed:true,availability:'profile',removable:true,rows:[{entryId:'test:fixture'}],...overrides};
+ let present=true;const calls=[];
+ const manager={listBundles:async()=>present?[bundle]:[],listPlugins:async()=>[{entryId:'test:fixture',fiberPhase:'active'}],inspect:async()=>({status:'refused',problem:'already-installed'}),removeBundle:async name=>{calls.push(['remove',name]);present=false;return {application:'applied'}},installBundle:async(spec,opts)=>{calls.push(['install',spec,opts]);present=true;return {application:'applied',version:'1.1.0'}}};
+ const ctx={get:k=>k==='profileContext'?{name:'qa',dir:'/isolated/custom'}:k==='pluginManager'?manager:undefined};return {ctx,manager,calls,bundle};
+}
+await test('exact current-profile removal',async()=>{const {ctx,calls}=fixture();assert.equal((await managedRemove(ctx,'fixture')).ok,true);assert.deepEqual(calls,[['remove','fixture']]);});
+await test('preserve disabled status during update',async()=>{const {ctx,calls}=fixture();assert.equal((await managedUpdate(ctx,'fixture')).applied,true);assert.equal(calls[1][1],'fixture@latest');assert.equal(calls[1][2].enabled,false);assert.equal(calls[1][2].approvedBuilds,undefined);});
+await test('failed update restores exact old version',async()=>{const {ctx,manager,calls}=fixture();manager.installBundle=async(spec,opts)=>{calls.push(['install',spec,opts]);return spec.endsWith('@latest')?{application:'failed',error:{code:'network'}}:{application:'applied'}};const r=await managedUpdate(ctx,'fixture');assert.equal(r.ok,false);assert.equal(r.rollback.ok,true);assert.equal(calls.at(-1)[1],'fixture@1.0.0');});
+await test('failed rollback remains explicit failure',async()=>{const {ctx,manager}=fixture();manager.installBundle=async()=>({application:'failed',error:{code:'network'}});const r=await managedUpdate(ctx,'fixture');assert.equal(r.ok,false);assert.equal(r.rollback.ok,false);assert.match(r.rollback.error,/network/);});
+await test('non-registry source never removed for update',async()=>{const {ctx,calls}=fixture({source:'github:owner/repo'});const r=await managedUpdate(ctx,'fixture');assert.equal(r.needsManual,true);assert.equal(calls.length,0);});
+await test('protected bundle and self-mutation rejected',async()=>{const a=fixture({removable:false});await assert.rejects(managedRemove(a.ctx,'fixture'));assert.equal(a.calls.length,0);const b=fixture({name:'@dsh-market/plugin'});await assert.rejects(managedUpdate(b.ctx,'@dsh-market/plugin'),/市場/);assert.equal(b.calls.length,0);});
+await test('foreign profile rejected',async()=>{const {ctx,calls}=fixture();await assert.rejects(managedRemove(ctx,'fixture',{targetProfile:'desktop'}));assert.equal(calls.length,0);});
+await test('failed remove never proceeds to install',async()=>{const {ctx,manager,calls}=fixture();manager.removeBundle=async()=>({application:'failed',error:{code:'bundle-in-use'}});const r=await managedUpdate(ctx,'fixture');assert.equal(r.ok,false);assert.equal(calls.length,0);});
+await test('restart-required is visible not hidden',async()=>{const {ctx,manager}=fixture();manager.removeBundle=async()=>({application:'restart-required'});assert.equal((await managedRemove(ctx,'fixture')).application,'restart-required');});
+await test('activation uses live host phases',async()=>{const {ctx,manager,bundle}=fixture();assert.equal((await managedVerify(ctx,'fixture')).state,'inert');bundle.enabled=true;assert.equal((await managedVerify(ctx,'fixture')).state,'live');manager.listPlugins=async()=>[{entryId:'test:fixture',fiberPhase:'failed'}];assert.equal((await managedVerify(ctx,'fixture')).state,'broken');manager.listPlugins=async()=>[];assert.equal((await managedVerify(ctx,'fixture')).state,'pending');});
+console.log(`${total} managed mutation tests passed; no real profile changed.`);

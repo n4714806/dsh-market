@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {semanticModel} from './lib/semantic-model.js';
+let selection={provider:'test-a',model:'model-a',reasoningEffort:'high'};
+const calls=[];
+let stream=async function*(options){calls.push(options);yield {type:'reasoning-delta',text:'private reasoning'};yield {type:'text-delta',text:'{"picks":[{"i":0}]}'};yield {type:'finish',reason:{kind:'stop'}};};
+const ctx={get:k=>k==='agentDefaultModel'?{currentSelection:()=>({...selection})}:k==='llm'?{stream:(o)=>stream(o)}:undefined};
+let r=await semanticModel(ctx,'test');assert.equal(r.ai.status,'used');assert.equal(r.ai.model,'model-a');assert.equal(calls[0].reasoningEffort,'high');assert.ok(!r.text.includes('reasoning'));
+selection={provider:'test-b',model:'model-b'};r=await semanticModel(ctx,'test');assert.equal(r.ai.provider,'test-b');assert.equal(calls[1].reasoningEffort,undefined);
+r=await semanticModel({get:()=>undefined},'test');assert.equal(r.ai.status,'unavailable');
+stream=async function*(){yield {type:'finish',reason:{kind:'error',failure:{message:'sensitive endpoint details'}}}};
+r=await semanticModel(ctx,'test');assert.equal(r.ai.status,'fallback');assert.ok(!r.ai.reason.includes('sensitive'));
+stream=async function*(){yield {type:'finish',reason:{kind:'max-tokens'}}};assert.equal((await semanticModel(ctx,'test')).ai.status,'fallback');
+stream=async function*(options){await new Promise(resolve=>options.signal.addEventListener('abort',resolve,{once:true}));};
+r=await semanticModel(ctx,'test',{timeoutMs:5});assert.equal(r.ai.status,'fallback');assert.match(r.ai.reason,/逾時/);
+console.log('PASS semantic model: dynamic defaults, reasoning isolation, provenance, missing service, terminal errors and bounded timeout. No paid calls.');
